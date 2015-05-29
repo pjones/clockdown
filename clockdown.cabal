@@ -41,3 +41,22 @@ library
                , time          >= 1.5  && < 1.6
 
 --               , hscurses      >= 1.4  && < 1.5
+
+--------------------------------------------------------------------------------
+test-suite test
+  type: exitcode-stdio-1.0
+  default-language: Haskell2010
+  hs-source-dirs: test
+  main-is: Main.hs
+  other-modules:
+    IndicatorTest
+
+  ghc-options: -Wall -fwarn-incomplete-uni-patterns
+
+  if flag(maintainer)
+    ghc-options: -Werror
+
+  build-depends: base
+               , clockdown
+               , tasty       >= 0.10 && < 0.11
+               , tasty-hunit >= 0.9  && < 0.10

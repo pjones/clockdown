@@ -44,26 +44,21 @@ data Indicator = Indicator Word8 deriving (Show)
 --      |       |
 --       -- D --
 -- @
-data Segment = A | B | C | D | E | F | G deriving (Eq, Enum)
+data Segment = A | B | C | D | E | F | G deriving (Eq, Enum, Bounded, Show)
 
 --------------------------------------------------------------------------------
 -- | Create an indicator that represents the given integer.  Only the numbers
 -- 0 through 9 can be displayed.  Numbers outside that range will be
 -- drawn as an underscore.
 indicator :: Int -> Indicator
-indicator n =
-  Indicator $ case n of
-                0 -> 0x3f
-                1 -> 0x06
-                2 -> 0x5b
-                3 -> 0x4f
-                4 -> 0x66
-                5 -> 0x6d
-                6 -> 0x7d
-                7 -> 0x07
-                8 -> 0x7f
-                9 -> 0x6f
-                _ -> 0x10
+indicator n = Indicator $
+  case n of
+    0 -> 0x3f; 1 -> 0x06
+    2 -> 0x5b; 3 -> 0x4f
+    4 -> 0x66; 5 -> 0x6d
+    6 -> 0x7d; 7 -> 0x07
+    8 -> 0x7f; 9 -> 0x6f
+    _ -> 0x08
 
 --------------------------------------------------------------------------------
 -- | Test to see if an indicator should be lit up.
