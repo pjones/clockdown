@@ -15,7 +15,7 @@ module Clockdown.Core.Digital.Indicator
        ( Indicator
        , Segment (..)
        , indicator
-       , testSegment
+       , hasSeg
        ) where
 
 --------------------------------------------------------------------------------
@@ -62,5 +62,5 @@ indicator n = Indicator $
 
 --------------------------------------------------------------------------------
 -- | Test to see if an indicator should be lit up.
-testSegment :: Indicator -> Segment -> Bool
-testSegment (Indicator bits) = testBit bits . fromEnum
+hasSeg :: Indicator -> Segment -> Bool
+hasSeg (Indicator bits) = testBit bits . fromEnum

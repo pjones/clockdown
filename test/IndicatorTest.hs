@@ -32,8 +32,8 @@ segmentsTest =
     check digit table seg =
       assertBool ("Segment: " ++ show seg ++ " from " ++ show digit) $
         case lookup seg table of
-          Nothing -> not (indicator digit `testSegment` seg)
-          Just _  -> indicator digit `testSegment` seg
+          Nothing -> not (indicator digit `hasSeg` seg)
+          Just _  -> indicator digit `hasSeg` seg
 
     testCases :: [(Int, [Segment])]
     testCases = [ (0,  [A, B, C, D, E, F   ])

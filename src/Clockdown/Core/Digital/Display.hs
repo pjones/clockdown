@@ -13,7 +13,7 @@ the LICENSE file.
 -- | A digital display containing four seven-segment indicators.
 module Clockdown.Core.Digital.Display
        ( Display (..)
-       , clock
+       , digitalClock
        , countDown
        ) where
 
@@ -37,8 +37,8 @@ data Display = Display
 --------------------------------------------------------------------------------
 -- | Create a display suitable for showing a clock consisting of hours
 -- and minutes.  The indicators will read from left to right: @H H M M@.
-clock :: TimeOfDay -> Display
-clock t = display (todHour t) (todMin t)
+digitalClock :: TimeOfDay -> Display
+digitalClock t = display (todHour t) (todMin t)
 
 --------------------------------------------------------------------------------
 -- | Create a display to show the number of seconds remaining in a
