@@ -10,11 +10,15 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Main (main) where
+module Clockdown.UI.Common.Action
+       ( Action (..)
+       ) where
 
 --------------------------------------------------------------------------------
-import qualified Clockdown.UI.Term.Run as Clockdown
+-- Library imports:
+import Data.Time
 
 --------------------------------------------------------------------------------
-main :: IO ()
-main = Clockdown.run
+-- | Actions which can be triggered by the system or the user.
+data Action = Tick UTCTime
+              -- ^ Update the clock.

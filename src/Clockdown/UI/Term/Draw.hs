@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 {-
 
 This file is part of the package clockdown. It is subject to the
@@ -14,12 +12,12 @@ the LICENSE file.
 --------------------------------------------------------------------------------
 -- | Functions for creating Vty images to display a clock/timer.
 module Clockdown.UI.Term.Draw
-       ( run
+       ( drawDisplay
+       , centerImage
        ) where
 
 --------------------------------------------------------------------------------
 -- Library imports:
-import Data.Time
 import Graphics.Vty
 import Graphics.Vty.Prelude
 
@@ -27,8 +25,7 @@ import Graphics.Vty.Prelude
 -- Local imports:
 import Clockdown.Core.Digital.Display
 import Clockdown.Core.Digital.Indicator
-import Clockdown.Core.Properties
-import Clockdown.Core.Window
+-- import Clockdown.Core.Properties
 
 --------------------------------------------------------------------------------
 -- | Draw a single indicator into a Vty image.
@@ -96,29 +93,3 @@ centerImage display image = translate x y image
   where
     x = (regionWidth  display `div` 2) - (imageWidth  image `div` 2)
     y = (regionHeight display `div` 2) - (imageHeight image `div` 2)
-
---------------------------------------------------------------------------------
--- | Temporary function for testing the drawing functions.
-run :: IO ()
-run = do
-  cfg <- standardIOConfig
-  vty <- mkVty cfg
-  tz  <- getCurrentTimeZone
-  go vty $ makeClock (Properties "foo") tz
-  shutdown vty
-
-  where
-    go vty clock = do
-      now <- getCurrentTime
-      region <- displayBounds (outputIface vty)
-
-      let display = windowDigitalDisplay clock now
-      update vty $ picForImage (centerImage region $ drawDisplay display)
-
-      e <- nextEvent vty
-      case e of
-        EvKey KEsc []        -> return ()
-        EvKey (KChar '+') [] -> go vty (windowSucc clock)
-        EvKey (KChar '=') [] -> go vty (windowSucc clock)
-        EvKey (KChar '-') [] -> go vty (windowPred clock)
-        _                    -> go vty clock
