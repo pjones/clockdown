@@ -50,6 +50,7 @@ drawThread vty channel = forever $ do
           display = windowDigitalDisplay clock t
       region <- displayBounds (outputIface vty)
       update vty $ picForImage (centerImage region $ drawDisplay display)
+    Quit -> return ()
 
 --------------------------------------------------------------------------------
 -- | Temporary function for testing the drawing functions.

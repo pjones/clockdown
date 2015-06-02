@@ -12,13 +12,23 @@ the LICENSE file.
 --------------------------------------------------------------------------------
 module Clockdown.UI.Common.Action
        ( Action (..)
+       , parseAction
        ) where
 
 --------------------------------------------------------------------------------
 -- Library imports:
+import Data.Text (Text)
 import Data.Time
 
 --------------------------------------------------------------------------------
 -- | Actions which can be triggered by the system or the user.
 data Action = Tick UTCTime
               -- ^ Update the clock.
+
+            | Quit
+              -- ^ Quit the application.
+            deriving (Show, Read)
+
+--------------------------------------------------------------------------------
+parseAction :: Text -> Either String Action
+parseAction = undefined
