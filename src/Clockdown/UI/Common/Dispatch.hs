@@ -21,25 +21,27 @@ import Data.Time (UTCTime)
 --------------------------------------------------------------------------------
 -- Local imports:
 import Clockdown.Core.Clockdown
-import qualified Clockdown.Core.Stack as S
+import Clockdown.Core.Stack
 import Clockdown.Core.Window
 import Clockdown.UI.Common.Action
 
 --------------------------------------------------------------------------------
-dispatch :: (Monad m) => Action -> Clockdown r m (Maybe UTCTime, Window)
+dispatch :: (Monad m) => Action -> Clockdown r m (Maybe UTCTime)
 dispatch a = do
   windows <- get
 
   case a of
     Tick t -> do
       -- Update all windows, then return the main window.
-      let windows' = fmap (windowTick t) windows
-      put windows'
-      return (Just t,  S.head windows')
+      put $ fmap (windowTick t) windows
+      return (Just t)
+
+    NextWindow -> do
+      put (focusRight windows)
+      return Nothing
 
     NewWindow w -> do
-      let windows' = S.push w windows
-      put windows'
-      return (Nothing, w)
+      put (push w windows)
+      return Nothing
 
-    Quit -> return (Nothing, S.head windows)
+    Quit -> return Nothing

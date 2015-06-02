@@ -17,7 +17,6 @@ module Clockdown.UI.Common.Binding
        ( KeyCode     (..)
        , KeyModifier (..)
        , KeyMap
-       , defaultKeyMap
        , parseKeys
        , processKey
        ) where
@@ -31,10 +30,6 @@ import Data.Text (Text)
 import Data.Word
 
 --------------------------------------------------------------------------------
--- Local imports:
-import Clockdown.UI.Common.Action
-
---------------------------------------------------------------------------------
 data KeyCode = RawKey Char      -- ^ A normal character key.
              | Escape           -- ^ The escape key.
              deriving (Eq, Ord)
@@ -46,23 +41,18 @@ data KeyModifier = Shift        -- ^ The shift key.
                  deriving (Eq, Enum)
 
 --------------------------------------------------------------------------------
-newtype KeyMap = KeyMap {unMap :: Map (Word8, KeyCode) Action}
+newtype KeyMap a = KeyMap {unMap :: Map (Word8, KeyCode) a}
 
 --------------------------------------------------------------------------------
-defaultKeyMap :: Either String KeyMap
-defaultKeyMap = parseKeys defaultKeys
-  where
-    defaultKeys :: [(Text, Text)]
-    defaultKeys = [ ("q",     "quit")
-                  , ("<ESC>", "quit")
-                  ]
+instance Functor KeyMap where
+  fmap f (KeyMap m) = KeyMap (Map.map f m)
 
 --------------------------------------------------------------------------------
-parseKeys :: [(Text, Text)] -> Either String KeyMap
+parseKeys :: [(Text, a)] -> Either String (KeyMap a)
 parseKeys = undefined
 
 --------------------------------------------------------------------------------
-processKey :: [KeyModifier] -> KeyCode -> KeyMap -> Maybe Action
+processKey :: [KeyModifier] -> KeyCode -> KeyMap a -> Maybe a
 processKey mods key = Map.lookup (modsToWord mods, key) . unMap
 
 --------------------------------------------------------------------------------

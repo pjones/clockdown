@@ -29,7 +29,7 @@ import Graphics.Vty
 import Clockdown.Core.Clockdown
 import Clockdown.Core.Countdown
 import Clockdown.Core.Properties
-import qualified Clockdown.Core.Stack as S
+import Clockdown.Core.Stack
 import Clockdown.Core.Window
 import Clockdown.UI.Common.Action
 import Clockdown.UI.Common.Dispatch
@@ -43,11 +43,11 @@ tickThread channel = forever $ do
   threadDelay 1000000
 
 --------------------------------------------------------------------------------
-drawThread :: Vty -> S.Stack Window -> Chan Action -> IO ()
+drawThread :: Vty -> Stack Window -> Chan Action -> IO ()
 drawThread vty wins channel = runClockdown vty wins $ forever $ do
-  action <- liftIO (readChan channel)
-  (mtick, window) <- dispatch action
-  tick <- maybe (liftIO getCurrentTime) return mtick
+  mtick  <- dispatch =<< liftIO (readChan channel)
+  window <- gets focus
+  tick   <- maybe (liftIO getCurrentTime) return mtick
   liftIO (draw $ windowDigitalDisplay window tick)
 
   where draw d = do
@@ -70,13 +70,18 @@ run = do
     cancel ticker
 
   where
-    wins tz = S.stack (makeClock (Properties "foo") tz)
+    wins tz = stack (makeClock (Properties "foo") tz)
 
     go chan vty = do
       e <- nextEvent vty
 
       case e of
         EvKey KEsc []        -> return ()
+
+        EvKey (KChar 'n') [] -> do
+          writeChan chan NextWindow
+          go chan vty
+
         EvKey (KChar '1') [] -> do
           now <- getCurrentTime
           let end = addUTCTime 90 now

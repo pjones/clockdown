@@ -32,6 +32,9 @@ data Action = Tick UTCTime
             | NewWindow Window
               -- ^ Add a window to the end of the window list.
 
+            | NextWindow
+              -- ^ Focus the next window.
+
             | Quit
               -- ^ Quit the application.
 

@@ -26,7 +26,6 @@ flag maintainer
 --------------------------------------------------------------------------------
 library
   exposed-modules:
-    -- Clockdown.UI.Common.Binding
     Clockdown.Core.Clock
     Clockdown.Core.Clockdown
     Clockdown.Core.Countdown
@@ -36,6 +35,7 @@ library
     Clockdown.Core.Stack
     Clockdown.Core.Window
     Clockdown.UI.Common.Action
+    Clockdown.UI.Common.Binding
     Clockdown.UI.Common.Dispatch
     Clockdown.UI.Term.Draw
     Clockdown.UI.Term.Run

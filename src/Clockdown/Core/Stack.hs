@@ -10,66 +10,57 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
+-- | A stack type and functions to manipulate it.
 module Clockdown.Core.Stack
        ( Stack
        , stack
        , push
        , pop
-       , head
-       , rotateLeft
-       , rotateRight
+       , focus
+       , focusLeft
+       , focusRight
        ) where
 
 --------------------------------------------------------------------------------
-import Prelude hiding (head)
-
---------------------------------------------------------------------------------
--- | A stack that can't be empty.
-data Stack a = Node a | List a (Stack a)
+-- | A stack that can't be empty and has a focused element.
+data Stack a = Stack [a] a [a]
 
 --------------------------------------------------------------------------------
 instance Functor Stack where
-  fmap f (Node x)    = Node (f x)
-  fmap f (List x xs) = List (f x) (fmap f xs)
+  fmap f (Stack a b c) = Stack (fmap f a) (f b) (fmap f c)
 
 --------------------------------------------------------------------------------
+-- | Create a new 'Stack'.
 stack :: a -> Stack a
-stack = Node
+stack x = Stack [] x []
 
 --------------------------------------------------------------------------------
+-- | Push an item onto the end of the stack and focus it.
 push :: a -> Stack a -> Stack a
-push x (Node y)    = List x (Node y)
-push x (List y ys) = List x (List y ys)
+push x (Stack a b c) = Stack (a ++ [b] ++ c) x []
 
 --------------------------------------------------------------------------------
-pop :: Stack a -> (a, Stack a)
-pop (Node x)    = (x, Node x)
-pop (List x xs) = (x, xs)
+-- | Pop the focused item off the stack and focus the next available item.
+pop :: Stack a -> Stack a
+pop (Stack [] b [])     = Stack [] b []
+pop (Stack as _ (c:cs)) = Stack as c cs
+pop (Stack a@(_:_) _ c) = Stack (init a) (last a) c
 
 --------------------------------------------------------------------------------
-rpush :: a -> Stack a -> Stack a
-rpush x (Node y)    = List y (Node x)
-rpush x (List y ys) = List y (rpush x ys)
+-- | Get the focused element.
+focus :: Stack a -> a
+focus (Stack _ b _) = b
 
 --------------------------------------------------------------------------------
-rpop :: Stack a -> (a, Stack a)
-rpop (Node x)          = (x, Node x)
-rpop (List x (Node y)) = (y, Node x)
-rpop (List x xs)       = let (y, ys) = rpop xs in (y, List x ys)
+-- | Change the focus to the next previous element.
+focusLeft :: Stack a -> Stack a
+focusLeft (Stack [] b [])     = Stack [] b []
+focusLeft (Stack a@(_:_) b c) = Stack (init a) (last a) (b:c)
+focusLeft (Stack a b c@(_:_)) = Stack (a ++ [b] ++ init c) (last c) []
 
 --------------------------------------------------------------------------------
-head :: Stack a -> a
-head (Node x)   = x
-head (List x _) = x
-
---------------------------------------------------------------------------------
-rotateLeft :: Stack a -> Stack a
-rotateLeft (Node x)          = Node x
-rotateLeft (List x (Node y)) = List y (Node x)
-rotateLeft (List x xs)       = List (head xs) (rpush x . snd $ pop xs)
-
---------------------------------------------------------------------------------
-rotateRight :: Stack a -> Stack a
-rotateRight (Node x)          = Node x
-rotateRight (List x (Node y)) = List y (Node x)
-rotateRight (List x xs)       = let (z, zs) = rpop xs in List z (List x zs)
+-- | Change the focus to the previous element.
+focusRight :: Stack a -> Stack a
+focusRight (Stack [] b [])     = Stack [] b []
+focusRight (Stack as b (c:cs)) = Stack (as ++ [b]) c cs
+focusRight (Stack (a:as) b c)  = Stack [] a (as ++ [b] ++ c)

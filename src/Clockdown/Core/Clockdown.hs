@@ -16,6 +16,7 @@ module Clockdown.Core.Clockdown
        ( Clockdown
        , ask
        , get
+       , gets
        , put
        , liftIO
        , runClockdown
