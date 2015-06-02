@@ -10,31 +10,36 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Clockdown.UI.Common.Action
-       ( Action (..)
-       , parseAction
+module Clockdown.UI.Common.Dispatch
+       ( dispatch
        ) where
 
 --------------------------------------------------------------------------------
 -- Library imports:
-import Data.Text (Text)
-import Data.Time
+import Data.Time (UTCTime)
 
 --------------------------------------------------------------------------------
 -- Local imports:
+import Clockdown.Core.Clockdown
+import qualified Clockdown.Core.Stack as S
 import Clockdown.Core.Window
+import Clockdown.UI.Common.Action
 
 --------------------------------------------------------------------------------
--- | Actions which can be triggered by the system or the user.
-data Action = Tick UTCTime
-              -- ^ Update the clock.
+dispatch :: (Monad m) => Action -> Clockdown r m (Maybe UTCTime, Window)
+dispatch a = do
+  windows <- get
 
-            | NewWindow Window
-              -- ^ Add a window to the end of the window list.
+  case a of
+    Tick t -> do
+      -- Update all windows, then return the main window.
+      let windows' = fmap (windowTick t) windows
+      put windows'
+      return (Just t,  S.head windows')
 
-            | Quit
-              -- ^ Quit the application.
+    NewWindow w -> do
+      let windows' = S.push w windows
+      put windows'
+      return (Nothing, w)
 
---------------------------------------------------------------------------------
-parseAction :: Text -> Either String Action
-parseAction = undefined
+    Quit -> return (Nothing, S.head windows)

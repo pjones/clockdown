@@ -10,11 +10,11 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Clockdown.Core.Clock
-       ( Clock (..)
-       , clockDigitalDisplay
-       , clockSucc
-       , clockPred
+module Clockdown.Core.Countdown
+       ( Countdown (..)
+       , countDownDigitalDisplay
+       , countDownSucc
+       , countDownPred
        ) where
 
 --------------------------------------------------------------------------------
@@ -27,30 +27,22 @@ import qualified Clockdown.Core.Digital.Display as Digital
 import Clockdown.Core.Properties
 
 --------------------------------------------------------------------------------
-data Clock = Clock
-  { clockProps    :: Properties
-  , clockTimeZone :: TimeZone
+data Countdown = Countdown
+  { countProps :: Properties
+  , countEnd   :: UTCTime
   }
 
 --------------------------------------------------------------------------------
-clockDigitalDisplay :: Clock -> UTCTime -> Digital.Display
-clockDigitalDisplay c t = Digital.digitalClock (localTimeOfDay time)
-  where time = utcToLocalTime (clockTimeZone c) t
+countDownDigitalDisplay :: Countdown -> UTCTime -> Digital.Display
+countDownDigitalDisplay c t = Digital.digitalCountDown secs
+  where secs = max 0 (truncate $ diffUTCTime (countEnd c) t)
 
 --------------------------------------------------------------------------------
--- | Move a clock forward one hour.
-clockSucc :: Clock -> Clock
-clockSucc = modifyClockTZ (+60)
+-- | Move a countdown forward one minute.
+countDownSucc :: Countdown -> Countdown
+countDownSucc = undefined
 
 --------------------------------------------------------------------------------
--- | Move a clock backward one hour.
-clockPred :: Clock -> Clock
-clockPred = modifyClockTZ (subtract 60)
-
---------------------------------------------------------------------------------
--- | Helper function to alter a clock's time zone.
-modifyClockTZ :: (Int -> Int) -> Clock -> Clock
-modifyClockTZ f c = c {clockTimeZone = newTZ}
-  where
-    newMin = f (timeZoneMinutes $ clockTimeZone c)
-    newTZ = (clockTimeZone c) {timeZoneMinutes = newMin}
+-- | Move a countdown backward one minute.
+countDownPred :: Countdown -> Countdown
+countDownPred = undefined

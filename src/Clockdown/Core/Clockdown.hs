@@ -1,3 +1,5 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 {-
 
 This file is part of the package clockdown. It is subject to the
@@ -10,31 +12,29 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Clockdown.UI.Common.Action
-       ( Action (..)
-       , parseAction
+module Clockdown.Core.Clockdown
+       ( Clockdown
+       , ask
+       , get
+       , put
+       , liftIO
+       , runClockdown
        ) where
 
 --------------------------------------------------------------------------------
--- Library imports:
-import Data.Text (Text)
-import Data.Time
+import Control.Monad.RWS
 
 --------------------------------------------------------------------------------
--- Local imports:
+import Clockdown.Core.Stack
 import Clockdown.Core.Window
 
 --------------------------------------------------------------------------------
--- | Actions which can be triggered by the system or the user.
-data Action = Tick UTCTime
-              -- ^ Update the clock.
-
-            | NewWindow Window
-              -- ^ Add a window to the end of the window list.
-
-            | Quit
-              -- ^ Quit the application.
+newtype Clockdown r m a = Clockdown {unC :: RWST r () (Stack Window) m a}
+                        deriving ( Functor, Applicative, Monad, MonadIO
+                                 , MonadReader r, MonadState (Stack Window)
+                                 )
 
 --------------------------------------------------------------------------------
-parseAction :: Text -> Either String Action
-parseAction = undefined
+runClockdown :: (Monad m) => r -> Stack Window -> Clockdown r m a -> m a
+runClockdown r s c = do (a, _, _) <- runRWST (unC c) r s
+                        return a

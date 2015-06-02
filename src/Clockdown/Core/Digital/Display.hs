@@ -14,7 +14,7 @@ the LICENSE file.
 module Clockdown.Core.Digital.Display
        ( Display (..)
        , digitalClock
-       , countDown
+       , digitalCountDown
        ) where
 
 --------------------------------------------------------------------------------
@@ -45,8 +45,8 @@ digitalClock t = display (todHour t) (todMin t)
 -- count down timer.  When there are more than sixth minutes remaining
 -- the display will show hours and minutes.  Otherwise it will show
 -- minutes and seconds.
-countDown :: Int -> Display
-countDown n = if hh > 0 then display hh mm else display mm ss
+digitalCountDown :: Int -> Display
+digitalCountDown n = if hh > 0 then display hh mm else display mm ss
   where
     hh = n `div` 3600
     mm = (n `div` 60) - (hh * 60)

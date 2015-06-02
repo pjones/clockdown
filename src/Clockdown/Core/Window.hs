@@ -11,8 +11,9 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 module Clockdown.Core.Window
-       ( Window
+       ( Window (..)
        , makeClock
+       , windowTick
        , windowDigitalDisplay
        , windowProperties
        , windowSucc
@@ -26,6 +27,7 @@ import Data.Time
 --------------------------------------------------------------------------------
 -- Local imports:
 import Clockdown.Core.Clock
+import Clockdown.Core.Countdown
 import qualified Clockdown.Core.Digital.Display as Digital
 import Clockdown.Core.Properties
 
@@ -33,27 +35,37 @@ import Clockdown.Core.Properties
 -- | A type to hold the information about what should be displayed in
 -- a window.
 data Window = ClockWin Clock
+            | CountdownWin Countdown
 
 --------------------------------------------------------------------------------
 makeClock :: Properties -> TimeZone -> Window
 makeClock p = ClockWin . Clock p
 
 --------------------------------------------------------------------------------
+windowTick :: UTCTime -> Window -> Window
+windowTick _ (ClockWin c) = ClockWin c -- No ticking necessary.
+windowTick _ (CountdownWin c) = CountdownWin c -- FIXME:
+
+--------------------------------------------------------------------------------
 -- | Convert a window into a digital display.
 windowDigitalDisplay :: Window -> UTCTime -> Digital.Display
-windowDigitalDisplay (ClockWin c) = clockDigitalDisplay c
+windowDigitalDisplay (ClockWin c)     = clockDigitalDisplay c
+windowDigitalDisplay (CountdownWin c) = countDownDigitalDisplay c
 
 --------------------------------------------------------------------------------
 -- | Get the display properties for a window.
 windowProperties :: Window -> Properties
-windowProperties (ClockWin c) = clockProps c
+windowProperties (ClockWin c)     = clockProps c
+windowProperties (CountdownWin c) = countProps c
 
 --------------------------------------------------------------------------------
 -- | Move the time shown in a window forward by some amount.
 windowSucc :: Window -> Window
-windowSucc (ClockWin c) = ClockWin (clockForward c)
+windowSucc (ClockWin c)     = ClockWin (clockSucc c)
+windowSucc (CountdownWin c) = CountdownWin (countDownSucc c)
 
 --------------------------------------------------------------------------------
 -- | Move the time show in a window backward by some amount.
 windowPred :: Window -> Window
-windowPred (ClockWin c) = ClockWin (clockBackward c)
+windowPred (ClockWin c)     = ClockWin (clockPred c)
+windowPred (CountdownWin c) = CountdownWin (countDownPred c)

@@ -26,9 +26,13 @@ import Graphics.Vty
 
 --------------------------------------------------------------------------------
 -- Local imports:
+import Clockdown.Core.Clockdown
+import Clockdown.Core.Countdown
 import Clockdown.Core.Properties
+import qualified Clockdown.Core.Stack as S
 import Clockdown.Core.Window
 import Clockdown.UI.Common.Action
+import Clockdown.UI.Common.Dispatch
 import Clockdown.UI.Term.Draw
 
 --------------------------------------------------------------------------------
@@ -39,18 +43,16 @@ tickThread channel = forever $ do
   threadDelay 1000000
 
 --------------------------------------------------------------------------------
-drawThread :: Vty -> Chan Action -> IO ()
-drawThread vty channel = forever $ do
-  tz  <- getCurrentTimeZone
-  action <- readChan channel
+drawThread :: Vty -> S.Stack Window -> Chan Action -> IO ()
+drawThread vty wins channel = runClockdown vty wins $ forever $ do
+  action <- liftIO (readChan channel)
+  (mtick, window) <- dispatch action
+  tick <- maybe (liftIO getCurrentTime) return mtick
+  liftIO (draw $ windowDigitalDisplay window tick)
 
-  case action of
-    Tick t -> do
-      let clock   = makeClock (Properties "foo") tz
-          display = windowDigitalDisplay clock t
-      region <- displayBounds (outputIface vty)
-      update vty $ picForImage (centerImage region $ drawDisplay display)
-    Quit -> return ()
+  where draw d = do
+          region <- displayBounds (outputIface vty)
+          update vty $ picForImage (centerImage region $ drawDisplay d)
 
 --------------------------------------------------------------------------------
 -- | Temporary function for testing the drawing functions.
@@ -60,16 +62,25 @@ run = do
   vty <- mkVty cfg
   channel <- newChan
   ticker <- async (tickThread channel)
+  tz  <- getCurrentTimeZone
 
-  withAsync (drawThread vty channel) $ \_ -> do
-    go vty
+  withAsync (drawThread vty (wins tz) channel) $ \_ -> do
+    go channel vty
     shutdown vty
     cancel ticker
 
   where
-    go vty = do
+    wins tz = S.stack (makeClock (Properties "foo") tz)
+
+    go chan vty = do
       e <- nextEvent vty
 
       case e of
         EvKey KEsc []        -> return ()
-        _                    -> go vty
+        EvKey (KChar '1') [] -> do
+          now <- getCurrentTime
+          let end = addUTCTime 90 now
+          let w = CountdownWin $ Countdown (Properties "foo") end
+          writeChan chan (NewWindow w)
+          go chan vty
+        _                    -> go chan vty
