@@ -14,6 +14,7 @@ the LICENSE file.
 module Clockdown.Core.Stack
        ( Stack
        , stack
+       , stackLenght
        , withFocused
        , push
        , pop
@@ -34,6 +35,10 @@ instance Functor Stack where
 -- | Create a new 'Stack'.
 stack :: a -> Stack a
 stack x = Stack [] x []
+
+--------------------------------------------------------------------------------
+stackLenght :: Stack a -> Int
+stackLenght (Stack a _ c) = length a + length c + 1
 
 --------------------------------------------------------------------------------
 -- | Apply a function to the focused element.

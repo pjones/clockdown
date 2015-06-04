@@ -36,7 +36,6 @@ dispatch (t, a) = do
 
   case a of
     Tick ->
-      -- Update all windows with the current tick.
       put $ fmap (windowTick t) windows
 
     PrevWindow ->
@@ -54,8 +53,15 @@ dispatch (t, a) = do
     TimePred ->
       put (withFocused windows $ windowPred t)
 
+    CloseWindow ->
+      put (pop windows)
+
+    CloseWindowOrQuit
+      | stackLenght windows == 1 -> quit
+      | otherwise                -> put (pop windows)
+
     Quit ->
-      return ()
+      quit
 
   return t
 

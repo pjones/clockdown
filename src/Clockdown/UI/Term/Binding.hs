@@ -11,8 +11,7 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 module Clockdown.UI.Term.Binding
-       ( fixupKeys
-       , convertVtyEvent
+       ( eventToAction
        ) where
 
 --------------------------------------------------------------------------------
@@ -21,7 +20,15 @@ import qualified Graphics.Vty as V
 
 --------------------------------------------------------------------------------
 -- Local imports:
+import Clockdown.Core.Action
 import Clockdown.Core.Binding
+import Clockdown.Core.Config
+
+--------------------------------------------------------------------------------
+eventToAction :: V.Event -> Config -> Maybe Action
+eventToAction e c = do
+  key <- convertVtyEvent (fixupKeys e)
+  processBinding (configKeys c) key
 
 --------------------------------------------------------------------------------
 -- | Fix some Vty key events so that they report the correct keys.

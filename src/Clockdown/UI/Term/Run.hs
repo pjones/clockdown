@@ -27,7 +27,6 @@ import Graphics.Vty hiding (Config)
 --------------------------------------------------------------------------------
 -- Local imports:
 import Clockdown.Core.Action
-import Clockdown.Core.Binding
 import Clockdown.Core.Clockdown
 import Clockdown.Core.Config
 import Clockdown.Core.Dispatch
@@ -68,6 +67,19 @@ drawThread = forever $ do
       update v (picForImage $ drawWindow t w region)
 
 --------------------------------------------------------------------------------
+eventThread :: Clockdown Env IO ()
+eventThread = asks config >>= \c -> forever $ do
+  e <- liftIO . nextEvent =<< asks (vty . private)
+  maybe (return ()) send (eventToAction e c)
+
+  where
+    send :: Action -> Clockdown Env IO ()
+    send action =
+      do now <- liftIO getCurrentTime
+         chan <- asks (channel . private)
+         liftIO (writeChan chan (now, action))
+
+--------------------------------------------------------------------------------
 -- | Temporary function for testing the drawing functions.
 run :: IO ()
 run = do
@@ -78,24 +90,12 @@ run = do
   windows  <- (stack . newClockWindow now) <$> startingClock cfg
 
   let env       = Env vty' channel'
-      clockdown = runClockdown env cfg windows
+      clockdown = void . runClockdown env cfg windows
 
-  withAsync (clockdown tickThread) $ \_ ->
-    withAsync (clockdown drawThread) $ \_ -> do
-      clockdown go
-      shutdown vty'
+  threads <- sequence [ async (clockdown tickThread)
+                      , async (clockdown drawThread)
+                      , async (clockdown eventThread)
+                      ]
 
-  where
-    go :: Clockdown Env IO ()
-    go = do
-      e <- liftIO . nextEvent =<< asks (vty . private)
-      c <- asks config
-
-      case convertVtyEvent (fixupKeys e) >>= processBinding (configKeys c) of
-        Nothing     -> go
-        Just action -> if action == Quit
-                          then return ()
-                          else do now <- liftIO getCurrentTime
-                                  chan <- asks (channel . private)
-                                  liftIO (writeChan chan (now, action))
-                                  go
+  _ <- waitAnyCatchCancel threads
+  shutdown vty'

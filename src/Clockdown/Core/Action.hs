@@ -40,8 +40,15 @@ data Action = Tick
             | TimePred
               -- ^ Update the time in the focused window.
 
-            -- FIXME: CloseWindow
-            -- FIXME: CloseWindowOrQuit
+            | CloseWindow
+              -- ^ Close the focused window.  If the focused window is
+              -- the only window, this action does nothing.
+
+            | CloseWindowOrQuit
+              -- ^ Like @CloseWindow@, except that if the focused
+              -- window is the only window then the application will
+              -- quit.
+
             -- FIXME: ResetTime
 
             | Quit

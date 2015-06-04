@@ -23,12 +23,14 @@ module Clockdown.Core.Clockdown
        , config
        , private
        , liftIO
+       , quit
        , runClockdown
        ) where
 
 --------------------------------------------------------------------------------
 -- Library imports:
 import Control.Monad.RWS
+import Control.Monad.Trans.Maybe
 
 --------------------------------------------------------------------------------
 -- Local imports:
@@ -44,10 +46,14 @@ data Env r = Env
 
 --------------------------------------------------------------------------------
 newtype Clockdown r m a =
-  Clockdown {unC :: RWST (Env r) () (Stack Window) m a}
+  Clockdown {unC :: RWST (Env r) () (Stack Window) (MaybeT m) a}
   deriving ( Functor, Applicative, Monad, MonadIO
            , MonadReader (Env r), MonadState (Stack Window)
            )
+
+--------------------------------------------------------------------------------
+quit :: (Monad m) => Clockdown r m a
+quit = Clockdown $ lift (MaybeT $ return Nothing)
 
 --------------------------------------------------------------------------------
 runClockdown :: (Monad m)
@@ -55,11 +61,14 @@ runClockdown :: (Monad m)
              -> Config
              -> Stack Window
              -> Clockdown r m a
-             -> m a
+             -> m (Maybe a)
 
 runClockdown r cfg s c =
-  do (a, _, _) <- runRWST (unC c) env s
-     return a
+  do result <- runMaybeT $ runRWST (unC c) env s
+     case result of
+       Nothing        -> return Nothing
+       Just (a, _, _) -> return (Just a)
+
   where
     env = Env { config  = cfg
               , private = r

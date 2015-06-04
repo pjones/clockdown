@@ -65,7 +65,7 @@ startingClock c =
 defaultKeys :: KeyMap Action
 defaultKeys =
   makeKeyMap [ (([],      Escape),      Quit)
-             , (([],      RawKey 'q'),  Quit)
+             , (([],      RawKey 'q'),  CloseWindowOrQuit)
              , (([],      RawKey '\t'), NextWindow)
              , (([Shift], RawKey '\t'), PrevWindow)
              , (([],      RawKey '='),  TimeSucc)
@@ -96,7 +96,7 @@ defaultClock tz = (defaultClockName, clock)
 
 --------------------------------------------------------------------------------
 defaultCountdownName :: Text
-defaultCountdownName = "five"
+defaultCountdownName = "ten"
 
 --------------------------------------------------------------------------------
 defaultCountdown :: (Text, Countdown)
@@ -105,8 +105,8 @@ defaultCountdown = (defaultCountdownName, countdown)
     countdown :: Countdown
     countdown =  Countdown { countProps       = props
                            , countDoneColor   = Just red
-                           , countColorChange = 59
-                           , countDuration    = 300
+                           , countColorChange = 120
+                           , countDuration    = 600
                            , countEnd         = Nothing
                            , countOrigColor   = Nothing
                            }
