@@ -40,6 +40,10 @@ data Action = Tick
             | TimePred
               -- ^ Update the time in the focused window.
 
+            -- FIXME: CloseWindow
+            -- FIXME: CloseWindowOrQuit
+            -- FIXME: ResetTime
+
             | Quit
               -- ^ Quit the application.
 
