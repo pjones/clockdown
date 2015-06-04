@@ -87,8 +87,11 @@ defaultClock tz = (defaultClockName, clock)
     clock =  Clock props tz
 
     props :: Properties
-    props =  Properties { propName  = defaultClockName -- %b. %d, %Y
-                        , propColor = blue
+    props =  Properties { propName         = defaultClockName
+                        , propColor        = blue
+                        , propMessage      = Just "%b. %d, %Y"
+                        , propMessageColor = Nothing
+                        , propTimeLocale   = defaultTimeLocale
                         }
 
 --------------------------------------------------------------------------------
@@ -109,6 +112,9 @@ defaultCountdown = (defaultCountdownName, countdown)
                            }
 
     props :: Properties
-    props =  Properties { propName  = defaultCountdownName
-                        , propColor = green
+    props =  Properties { propName         = defaultCountdownName
+                        , propColor        = green
+                        , propMessage      = Just "Break Time!"
+                        , propMessageColor = Nothing
+                        , propTimeLocale   = defaultTimeLocale
                         }

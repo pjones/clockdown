@@ -59,17 +59,13 @@ drawThread = forever $ do
   env    <- asks private
   tick   <- dispatch =<< liftIO (readChan $ channel env)
   window <- gets focus
-  liftIO (draw (vty env) tick window)
+  liftIO $  draw (vty env) tick window
 
   where
     draw :: Vty -> UTCTime -> Window -> IO ()
     draw v t w = do
-      let display = windowDigitalDisplay w t
-          props   = windowProperties w
-          image   = drawDisplay props display
-
       region <- displayBounds (outputIface v)
-      update v $ picForImage (centerImage region image)
+      update v (picForImage $ drawWindow t w region)
 
 --------------------------------------------------------------------------------
 -- | Temporary function for testing the drawing functions.

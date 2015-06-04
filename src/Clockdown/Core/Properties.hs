@@ -18,6 +18,7 @@ module Clockdown.Core.Properties
 --------------------------------------------------------------------------------
 -- Library imports:
 import Data.Text (Text)
+import Data.Time
 
 --------------------------------------------------------------------------------
 -- Local imports:
@@ -25,9 +26,9 @@ import Clockdown.Core.Color
 
 --------------------------------------------------------------------------------
 data Properties = Properties
-  { propName  :: Text           -- ^ The name of the window.
-  , propColor :: Color          -- ^ The main color.
-    -- TODO: Time color
-    -- TODO: string message
-    -- TODO: string color
+  { propName         :: Text        -- ^ The name of the window.
+  , propColor        :: Color       -- ^ The main color.
+  , propMessage      :: Maybe Text  -- ^ An optional message to display.
+  , propMessageColor :: Maybe Color -- ^ Color of the optional message.
+  , propTimeLocale   :: TimeLocale  -- ^ Message locale.
   }

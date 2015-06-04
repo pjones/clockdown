@@ -12,12 +12,15 @@ the LICENSE file.
 --------------------------------------------------------------------------------
 -- | Functions for creating Vty images to display a clock/timer.
 module Clockdown.UI.Term.Draw
-       ( drawDisplay
-       , centerImage
+       ( drawWindow
        ) where
 
 --------------------------------------------------------------------------------
 -- Library imports:
+import Data.Maybe
+import Data.Text (Text)
+import qualified Data.Text as Text
+import Data.Time
 import Graphics.Vty
 import Graphics.Vty.Prelude
 
@@ -27,6 +30,16 @@ import qualified Clockdown.Core.Color as C
 import Clockdown.Core.Digital.Display
 import Clockdown.Core.Digital.Indicator
 import Clockdown.Core.Properties
+import Clockdown.Core.Window
+
+--------------------------------------------------------------------------------
+drawWindow :: UTCTime -> Window -> DisplayRegion -> Image
+drawWindow t w r = vertCat [ timeDigits, message ]
+  where
+    display    = windowDigitalDisplay w t
+    props      = windowProperties w
+    timeDigits = centerImage r $ drawDisplay props display
+    message    = centerImage (regionWidth r, 1) $ drawMessage props t
 
 --------------------------------------------------------------------------------
 -- | Draw a single indicator into a Vty image.
@@ -65,6 +78,20 @@ drawSep props = withBorder [ string defAttr "  "
                            ]
   where
     c = vtyColor (propColor props)
+
+--------------------------------------------------------------------------------
+drawMessage :: Properties -> UTCTime -> Image
+drawMessage p t =
+  case propMessage p of
+    Nothing  -> emptyImage
+    Just msg -> string (defAttr `withForeColor` color) (format msg)
+
+  where
+    format :: Text -> String
+    format s = formatTime (propTimeLocale p) (Text.unpack s) t
+
+    color :: Color
+    color = vtyColor $ fromMaybe (propColor p) (propMessageColor p)
 
 --------------------------------------------------------------------------------
 -- | Draw an entire display into a Vty image.
