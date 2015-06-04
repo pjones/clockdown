@@ -68,6 +68,10 @@ defaultKeys =
              , (([],      RawKey 'q'),  Quit)
              , (([],      RawKey '\t'), NextWindow)
              , (([Shift], RawKey '\t'), PrevWindow)
+             , (([],      RawKey '='),  TimeSucc)
+             , (([],      RawKey '+'),  TimeSucc)
+             , (([],      RawKey '-'),  TimePred)
+             , (([],      RawKey '_'),  TimeSucc)
              , (([],      FKey 1),      NewCountdown defaultCountdownName)
              ]
 
@@ -96,7 +100,13 @@ defaultCountdown :: (Text, Countdown)
 defaultCountdown = (defaultCountdownName, countdown)
   where
     countdown :: Countdown
-    countdown =  Countdown props 300 Nothing
+    countdown =  Countdown { countProps       = props
+                           , countDoneColor   = Just red
+                           , countColorChange = 59
+                           , countDuration    = 300
+                           , countEnd         = Nothing
+                           , countOrigColor   = Nothing
+                           }
 
     props :: Properties
     props =  Properties { propName  = defaultCountdownName

@@ -49,7 +49,7 @@ newCountDownWindow t c = windowTick t $ CountdownWin (countDownStart t c)
 --------------------------------------------------------------------------------
 windowTick :: UTCTime -> Window -> Window
 windowTick _ (ClockWin c) = ClockWin c -- No ticking necessary.
-windowTick _ (CountdownWin c) = CountdownWin c -- FIXME:
+windowTick t (CountdownWin c) = CountdownWin (countDownTick t c)
 
 --------------------------------------------------------------------------------
 -- | Convert a window into a digital display.
@@ -65,12 +65,12 @@ windowProperties (CountdownWin c) = countProps c
 
 --------------------------------------------------------------------------------
 -- | Move the time shown in a window forward by some amount.
-windowSucc :: Window -> Window
-windowSucc (ClockWin c)     = ClockWin (clockSucc c)
-windowSucc (CountdownWin c) = CountdownWin (countDownSucc c)
+windowSucc :: UTCTime -> Window -> Window
+windowSucc _ (ClockWin c)     = ClockWin (clockSucc c)
+windowSucc t (CountdownWin c) = CountdownWin (countDownSucc t c)
 
 --------------------------------------------------------------------------------
 -- | Move the time show in a window backward by some amount.
-windowPred :: Window -> Window
-windowPred (ClockWin c)     = ClockWin (clockPred c)
-windowPred (CountdownWin c) = CountdownWin (countDownPred c)
+windowPred :: UTCTime -> Window -> Window
+windowPred _ (ClockWin c)     = ClockWin (clockPred c)
+windowPred t (CountdownWin c) = CountdownWin (countDownPred t c)

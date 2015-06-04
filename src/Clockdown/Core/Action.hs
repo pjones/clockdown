@@ -34,6 +34,12 @@ data Action = Tick
             | NextWindow
               -- ^ Focus the next window.
 
+            | TimeSucc
+              -- ^ Update the time in the focused window.
+
+            | TimePred
+              -- ^ Update the time in the focused window.
+
             | Quit
               -- ^ Quit the application.
 

@@ -48,6 +48,12 @@ dispatch (t, a) = do
     NewCountdown name ->
       countdown t name
 
+    TimeSucc ->
+      put (withFocused windows $ windowSucc t)
+
+    TimePred ->
+      put (withFocused windows $ windowPred t)
+
     Quit ->
       return ()
 
