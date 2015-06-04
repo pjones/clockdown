@@ -23,14 +23,15 @@ import Graphics.Vty.Prelude
 
 --------------------------------------------------------------------------------
 -- Local imports:
+import qualified Clockdown.Core.Color as C
 import Clockdown.Core.Digital.Display
 import Clockdown.Core.Digital.Indicator
--- import Clockdown.Core.Properties
+import Clockdown.Core.Properties
 
 --------------------------------------------------------------------------------
 -- | Draw a single indicator into a Vty image.
-drawIndicator :: Indicator -> Image
-drawIndicator ssd =
+drawIndicator :: Properties -> Indicator -> Image
+drawIndicator props ssd =
   withBorder [ paintA F A B
              , paintB F B
              , paintA F G B
@@ -38,7 +39,7 @@ drawIndicator ssd =
              , paintA E D C
              ]
   where
-    on  = defAttr `withBackColor` blue
+    on  = defAttr `withBackColor` vtyColor (propColor props)
     off = defAttr
 
     whichAttr b = if b then on else off
@@ -55,23 +56,30 @@ drawIndicator ssd =
 
 --------------------------------------------------------------------------------
 -- | Draw the time separator into a Vty image.
-drawSep :: Image
-drawSep = withBorder [ string defAttr "  "
-                     , string (defAttr `withBackColor` blue) "  "
-                     , string defAttr "  "
-                     , string (defAttr `withBackColor` blue) "  "
-                     , string defAttr "  "
-                     ]
+drawSep :: Properties -> Image
+drawSep props = withBorder [ string defAttr "  "
+                           , string (defAttr `withBackColor` c) "  "
+                           , string defAttr "  "
+                           , string (defAttr `withBackColor` c) "  "
+                           , string defAttr "  "
+                           ]
+  where
+    c = vtyColor (propColor props)
 
 --------------------------------------------------------------------------------
 -- | Draw an entire display into a Vty image.
-drawDisplay :: Display -> Image
-drawDisplay d = horizCat [ drawIndicator (indicator0 d)
-                         , drawIndicator (indicator1 d)
-                         , drawSep
-                         , drawIndicator (indicator2 d)
-                         , drawIndicator (indicator3 d)
-                         ]
+drawDisplay :: Properties -> Display -> Image
+drawDisplay p d = horizCat [ drawIndicator p (indicator0 d)
+                           , drawIndicator p (indicator1 d)
+                           , drawSep p
+                           , drawIndicator p (indicator2 d)
+                           , drawIndicator p (indicator3 d)
+                           ]
+
+--------------------------------------------------------------------------------
+vtyColor :: C.Color -> Color
+vtyColor c@(C.ColorCode _) = ISOColor (C.color8   c)
+vtyColor c@(C.ColorRGB  _) = Color240 (C.color256 c)
 
 --------------------------------------------------------------------------------
 -- | Add a border around the given images.

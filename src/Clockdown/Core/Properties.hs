@@ -16,11 +16,17 @@ module Clockdown.Core.Properties
        ) where
 
 --------------------------------------------------------------------------------
+-- Library imports:
 import Data.Text (Text)
 
 --------------------------------------------------------------------------------
+-- Local imports:
+import Clockdown.Core.Color
+
+--------------------------------------------------------------------------------
 data Properties = Properties
-  { propName :: Text
+  { propName  :: Text           -- ^ The name of the window.
+  , propColor :: Color          -- ^ The main color.
     -- TODO: Time color
     -- TODO: string message
     -- TODO: string color

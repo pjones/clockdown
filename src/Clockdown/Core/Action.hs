@@ -10,7 +10,7 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Clockdown.UI.Common.Action
+module Clockdown.Core.Action
        ( Action (..)
        , parseAction
        ) where
@@ -18,25 +18,26 @@ module Clockdown.UI.Common.Action
 --------------------------------------------------------------------------------
 -- Library imports:
 import Data.Text (Text)
-import Data.Time
-
---------------------------------------------------------------------------------
--- Local imports:
-import Clockdown.Core.Window
 
 --------------------------------------------------------------------------------
 -- | Actions which can be triggered by the system or the user.
-data Action = Tick UTCTime
+data Action = Tick
               -- ^ Update the clock.
 
-            | NewWindow Window
-              -- ^ Add a window to the end of the window list.
+            | NewCountdown Text
+              -- ^ Add a countdown window to the end of the window
+              -- list and then focus it.
+
+            | PrevWindow
+              -- ^ Focus the previous window.
 
             | NextWindow
               -- ^ Focus the next window.
 
             | Quit
               -- ^ Quit the application.
+
+            deriving (Eq)
 
 --------------------------------------------------------------------------------
 parseAction :: Text -> Either String Action

@@ -12,6 +12,7 @@ the LICENSE file.
 --------------------------------------------------------------------------------
 module Clockdown.Core.Countdown
        ( Countdown (..)
+       , countDownStart
        , countDownDigitalDisplay
        , countDownSucc
        , countDownPred
@@ -28,14 +29,28 @@ import Clockdown.Core.Properties
 
 --------------------------------------------------------------------------------
 data Countdown = Countdown
-  { countProps :: Properties
-  , countEnd   :: UTCTime
+  { countProps    :: Properties    -- ^ Properties.
+  , countDuration :: Int           -- ^ Number of seconds.
+  , countEnd      :: Maybe UTCTime -- ^ Only set after countdown is running.
   }
 
 --------------------------------------------------------------------------------
+countDownStart :: UTCTime -> Countdown -> Countdown
+countDownStart t c = c { countEnd = Just endTime }
+  where
+    endTime :: UTCTime
+    endTime = addUTCTime (fromInteger . toInteger $ countDuration c) t
+
+--------------------------------------------------------------------------------
 countDownDigitalDisplay :: Countdown -> UTCTime -> Digital.Display
-countDownDigitalDisplay c t = Digital.digitalCountDown secs
-  where secs = max 0 (truncate $ diffUTCTime (countEnd c) t)
+countDownDigitalDisplay c t = Digital.digitalCountDown (countDownSecondsLeft c t)
+
+--------------------------------------------------------------------------------
+countDownSecondsLeft :: Countdown -> UTCTime -> Int
+countDownSecondsLeft c t =
+  case countEnd c of
+    Just end -> max 0 (truncate $ diffUTCTime end t)
+    Nothing  -> 0
 
 --------------------------------------------------------------------------------
 -- | Move a countdown forward one minute.

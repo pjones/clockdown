@@ -22,70 +22,84 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad
 import Data.Time
-import Graphics.Vty
+import Graphics.Vty hiding (Config)
 
 --------------------------------------------------------------------------------
 -- Local imports:
+import Clockdown.Core.Action
+import Clockdown.Core.Binding
 import Clockdown.Core.Clockdown
-import Clockdown.Core.Countdown
-import Clockdown.Core.Properties
+import Clockdown.Core.Config
+import Clockdown.Core.Dispatch
 import Clockdown.Core.Stack
 import Clockdown.Core.Window
-import Clockdown.UI.Common.Action
-import Clockdown.UI.Common.Dispatch
+import Clockdown.UI.Term.Binding
 import Clockdown.UI.Term.Draw
 
 --------------------------------------------------------------------------------
-tickThread :: Chan Action -> IO ()
-tickThread channel = forever $ do
-  now <- getCurrentTime
-  writeChan channel (Tick now)
-  threadDelay 1000000
+data Env = Env
+  { vty     :: Vty
+  , channel :: Chan (UTCTime, Action)
+  }
 
 --------------------------------------------------------------------------------
-drawThread :: Vty -> Stack Window -> Chan Action -> IO ()
-drawThread vty wins channel = runClockdown vty wins $ forever $ do
-  mtick  <- dispatch =<< liftIO (readChan channel)
-  window <- gets focus
-  tick   <- maybe (liftIO getCurrentTime) return mtick
-  liftIO (draw $ windowDigitalDisplay window tick)
+tickThread :: Clockdown Env IO ()
+tickThread =
+  do chan <- asks (channel . private)
+     forever (liftIO $ go chan)
+  where
+    go chan = do
+      now <- getCurrentTime
+      writeChan chan (now, Tick)
+      threadDelay 1000000
 
-  where draw d = do
-          region <- displayBounds (outputIface vty)
-          update vty $ picForImage (centerImage region $ drawDisplay d)
+--------------------------------------------------------------------------------
+drawThread :: Clockdown Env IO ()
+drawThread = forever $ do
+  env    <- asks private
+  tick   <- dispatch =<< liftIO (readChan $ channel env)
+  window <- gets focus
+  liftIO (draw (vty env) tick window)
+
+  where
+    draw :: Vty -> UTCTime -> Window -> IO ()
+    draw v t w = do
+      let display = windowDigitalDisplay w t
+          props   = windowProperties w
+          image   = drawDisplay props display
+
+      region <- displayBounds (outputIface v)
+      update v $ picForImage (centerImage region image)
 
 --------------------------------------------------------------------------------
 -- | Temporary function for testing the drawing functions.
 run :: IO ()
 run = do
-  cfg <- standardIOConfig
-  vty <- mkVty cfg
-  channel <- newChan
-  ticker <- async (tickThread channel)
-  tz  <- getCurrentTimeZone
+  vty'     <- mkVty =<< standardIOConfig
+  channel' <- newChan
+  cfg      <- defConfig
+  now      <- getCurrentTime
+  windows  <- (stack . newClockWindow now) <$> startingClock cfg
 
-  withAsync (drawThread vty (wins tz) channel) $ \_ -> do
-    go channel vty
-    shutdown vty
-    cancel ticker
+  let env       = Env vty' channel'
+      clockdown = runClockdown env cfg windows
+
+  withAsync (clockdown tickThread) $ \_ ->
+    withAsync (clockdown drawThread) $ \_ -> do
+      clockdown go
+      shutdown vty'
 
   where
-    wins tz = stack (makeClock (Properties "foo") tz)
+    go :: Clockdown Env IO ()
+    go = do
+      e <- liftIO . nextEvent =<< asks (vty . private)
+      c <- asks config
 
-    go chan vty = do
-      e <- nextEvent vty
-
-      case e of
-        EvKey KEsc []        -> return ()
-
-        EvKey (KChar 'n') [] -> do
-          writeChan chan NextWindow
-          go chan vty
-
-        EvKey (KChar '1') [] -> do
-          now <- getCurrentTime
-          let end = addUTCTime 90 now
-          let w = CountdownWin $ Countdown (Properties "foo") end
-          writeChan chan (NewWindow w)
-          go chan vty
-        _                    -> go chan vty
+      case convertVtyEvent (fixupKeys e) >>= processBinding (configKeys c) of
+        Nothing     -> go
+        Just action -> if action == Quit
+                          then return ()
+                          else do now <- liftIO getCurrentTime
+                                  chan <- asks (channel . private)
+                                  liftIO (writeChan chan (now, action))
+                                  go

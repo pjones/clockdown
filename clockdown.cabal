@@ -26,17 +26,20 @@ flag maintainer
 --------------------------------------------------------------------------------
 library
   exposed-modules:
+    Clockdown.Core.Action
+    Clockdown.Core.Binding
     Clockdown.Core.Clock
     Clockdown.Core.Clockdown
+    Clockdown.Core.Color
+    Clockdown.Core.Config
     Clockdown.Core.Countdown
     Clockdown.Core.Digital.Display
     Clockdown.Core.Digital.Indicator
+    Clockdown.Core.Dispatch
     Clockdown.Core.Properties
     Clockdown.Core.Stack
     Clockdown.Core.Window
-    Clockdown.UI.Common.Action
-    Clockdown.UI.Common.Binding
-    Clockdown.UI.Common.Dispatch
+    Clockdown.UI.Term.Binding
     Clockdown.UI.Term.Draw
     Clockdown.UI.Term.Run
 
@@ -50,10 +53,13 @@ library
 
   build-depends: async         >= 2.0  && < 2.1
                , base          >= 4.7  && < 5.0
+               , byline        >= 0.2  && < 0.3
+               , colour        >= 2.3  && < 2.4
                , containers    >= 0.5  && < 0.6
                , mtl           >= 2.2  && < 2.3
                , text          >= 0.11 && < 1.3
                , time          >= 1.5  && < 1.6
+               , transformers  >= 0.4  && < 0.5
                , vty           >= 5.2  && < 5.3
 
 --------------------------------------------------------------------------------

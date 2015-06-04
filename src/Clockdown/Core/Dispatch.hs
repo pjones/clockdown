@@ -1,5 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 {-
 
 This file is part of the package clockdown. It is subject to the
@@ -12,55 +10,58 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Clockdown.Core.Clockdown
-       ( Clockdown
-       , ask
-       , asks
-       , get
-       , gets
-       , put
-       , modify
-       , config
-       , private
-       , liftIO
-       , runClockdown
+module Clockdown.Core.Dispatch
+       ( dispatch
        ) where
 
 --------------------------------------------------------------------------------
 -- Library imports:
-import Control.Monad.RWS
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Text (Text)
+import Data.Time (UTCTime)
 
 --------------------------------------------------------------------------------
 -- Local imports:
+import Clockdown.Core.Action
+import Clockdown.Core.Clockdown
 import Clockdown.Core.Config
 import Clockdown.Core.Stack
 import Clockdown.Core.Window
 
 --------------------------------------------------------------------------------
-data Env r = Env
-  { config  :: Config
-  , private :: r
-  }
+dispatch :: (Monad m) => (UTCTime, Action) -> Clockdown r m UTCTime
+dispatch (t, a) = do
+  windows <- get
+
+  case a of
+    Tick ->
+      -- Update all windows with the current tick.
+      put $ fmap (windowTick t) windows
+
+    PrevWindow ->
+      put (focusLeft windows)
+
+    NextWindow ->
+      put (focusRight windows)
+
+    NewCountdown name ->
+      countdown t name
+
+    Quit ->
+      return ()
+
+  return t
 
 --------------------------------------------------------------------------------
-newtype Clockdown r m a =
-  Clockdown {unC :: RWST (Env r) () (Stack Window) m a}
-  deriving ( Functor, Applicative, Monad, MonadIO
-           , MonadReader (Env r), MonadState (Stack Window)
-           )
+countdown :: (Monad m) => UTCTime -> Text -> Clockdown r m ()
+countdown tick name = newWin name configCountdowns (newCountDownWindow tick)
 
 --------------------------------------------------------------------------------
-runClockdown :: (Monad m)
-             => r
-             -> Config
-             -> Stack Window
-             -> Clockdown r m a
-             -> m a
+newWin :: (Monad m) => Text -> (Config -> Map Text a) -> (a -> Window) -> Clockdown r m ()
+newWin t m f = do
+  c <- asks config
 
-runClockdown r cfg s c =
-  do (a, _, _) <- runRWST (unC c) env s
-     return a
-  where
-    env = Env { config  = cfg
-              , private = r
-              }
+  case Map.lookup t (m c) of
+    Nothing -> return ()
+    Just a  -> modify (push (f a))

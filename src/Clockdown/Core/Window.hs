@@ -11,8 +11,9 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 module Clockdown.Core.Window
-       ( Window (..)
-       , makeClock
+       ( Window
+       , newClockWindow
+       , newCountDownWindow
        , windowTick
        , windowDigitalDisplay
        , windowProperties
@@ -38,8 +39,12 @@ data Window = ClockWin Clock
             | CountdownWin Countdown
 
 --------------------------------------------------------------------------------
-makeClock :: Properties -> TimeZone -> Window
-makeClock p = ClockWin . Clock p
+newClockWindow :: UTCTime -> Clock -> Window
+newClockWindow t c = windowTick t (ClockWin c)
+
+--------------------------------------------------------------------------------
+newCountDownWindow :: UTCTime -> Countdown -> Window
+newCountDownWindow t c = windowTick t $ CountdownWin (countDownStart t c)
 
 --------------------------------------------------------------------------------
 windowTick :: UTCTime -> Window -> Window
