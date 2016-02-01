@@ -1,0 +1,12 @@
+resolver: lts-4.2
+
+flags:
+  clockdown:
+    maintainer: true
+
+packages:
+  - ../
+
+extra-deps:
+  - byline-0.2.1.0
+  - terminfo-hs-0.2.1
