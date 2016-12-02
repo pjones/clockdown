@@ -39,9 +39,8 @@ fixupKeys e                       = e
 --------------------------------------------------------------------------------
 -- | Convert Vty events into Clockdown bindings.
 convertVtyEvent :: V.Event -> Maybe ([KeyModifier], KeyCode)
-convertVtyEvent (V.EvMouse{})    = Nothing
-convertVtyEvent (V.EvResize{})   = Nothing
 convertVtyEvent (V.EvKey key ms) = (,) (map convertMod ms) <$> convertKey key
+convertVtyEvent _                = Nothing
 
 --------------------------------------------------------------------------------
 convertMod :: V.Modifier -> KeyModifier
