@@ -22,7 +22,6 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time
 import Graphics.Vty
-import Graphics.Vty.Prelude
 
 --------------------------------------------------------------------------------
 -- Local imports:

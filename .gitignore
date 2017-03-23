@@ -6,3 +6,5 @@
 /.stack-work
 /build/.stack-work
 /stack.yaml
+/cabal.project.local
+/dist-newstyle
