@@ -72,7 +72,7 @@ defaultKeys =
              , (([],      RawKey '+'),  TimeSucc)
              , (([],      RawKey '-'),  TimePred)
              , (([],      RawKey '_'),  TimeSucc)
-             , (([],      FKey 1),      NewCountdown defaultCountdownName)
+             , (([],      RawKey '1'),  NewCountdown defaultCountdownName)
              ]
 
 --------------------------------------------------------------------------------
