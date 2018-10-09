@@ -51,7 +51,7 @@ library
     ghc-options: -Werror
     ghc-prof-options: -prof -auto-all
 
-  build-depends: async         >= 2.0  && < 2.2
+  build-depends: async         >= 2.0  && < 2.3
                , base          >= 4.7  && < 5.0
                , byline        >= 0.2  && < 1.0
                , colour        >= 2.3  && < 2.4
@@ -88,5 +88,5 @@ test-suite test
 
   build-depends: base
                , clockdown
-               , tasty       >= 0.10 && < 0.12
-               , tasty-hunit >= 0.9  && < 0.10
+               , tasty       >= 0.10 && < 1.2
+               , tasty-hunit >= 0.9  && < 0.11
